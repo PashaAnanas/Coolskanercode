@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <windows.h>
 
+#include "algorithm_search.cpp"
 #include "aboba.cpp"
 #include "searchNameFile.cpp"
 
