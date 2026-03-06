@@ -5,9 +5,13 @@
 #include <filesystem>
 #include <windows.h>
 
-#include "aboba.cpp"
+#include "cliout.cpp"
 #include "searchNameFile.cpp"
 
 int main(){
-    std::cout << "aboba" << std::endl;
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+    setlocale(LC_ALL, "ru");
+
+    cliout::startProgram();
 }
