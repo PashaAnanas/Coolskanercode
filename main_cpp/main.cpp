@@ -9,9 +9,5 @@
 #include "searchNameFile.cpp"
 
 int main(){
-
-    SetConsoleOutputCP(CP_UTF8);
-    SetConsoleCP(CP_UTF8);
-    setlocale(LC_ALL, "ru");
-
+    std::cout << "aboba" << std::endl;
 }
