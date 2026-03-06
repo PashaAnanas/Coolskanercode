@@ -6,9 +6,7 @@
 #include <windows.h>
 
 #include "algorithm_search.cpp"
-#include "aboba.cpp"
 #include "cliout.cpp"
-
 #include "searchNameFile.cpp"
 
 int main(){
