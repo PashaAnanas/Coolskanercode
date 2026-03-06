@@ -1,13 +1,12 @@
+#ifndef SEARCHNAME_FILE_H
+#define SEARCHNAME_FILE_H
+
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <windows.h>
-#include "cliout.cpp"
-void SetupRussianConsole() {
-    SetConsoleOutputCP(CP_UTF8);
-    SetConsoleCP(CP_UTF8);
-    std::setlocale(LC_ALL, "ru_RU.UTF-8");
-}
+
+#include "cliout.h"
 
 
 struct FileInfo {
@@ -88,26 +87,22 @@ void SearchFilesInFolders(const std::string& basePath) {
     FindClose(hFind);
 }
 
+
+void searchFilePrint(){
+    std::cout << "\n====================================\n";
+    std::cout << "=== ИТОГО: ===\n";
+    std::cout << "\n === Найдено файлов: " << globalFileId << " ===" << std::endl;
+    std::cout << "\n === Всего строк: " << globalLineId << " ===" << std::endl;
+}
+
 namespace searchNF{
     void searchFileinFolders()
     {
-        SetupRussianConsole();
         std::string path = cliout::enterDirPath();
         SearchFilesInFolders(path);
+        searchFilePrint();
     }
 }
 
-// int main() {
-    
-//     SetupRussianConsole();
-//     std::string path = "C:\\Users\\lizun\\Desktop\\RPM";
-    
-//     SearchFilesInFolders(path);
-    
-//     std::cout << "\n====================================\n";
-//     std::cout << "===ИТОГО:\n===";
-//     std::cout << "\n ===Найдено файлов: ===" << globalFileId << std::endl;
-//     std::cout << "\n ===Всего строк: ===" << globalLineId << std::endl;
-    
-//     return 0;
-// }
+
+#endif

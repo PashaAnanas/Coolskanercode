@@ -1,3 +1,6 @@
+#ifndef ALGORITHM_SEARCH_H
+#define ALGORITHM_SEARCH_H
+
 #include <iostream>
 #include <string>
 #include <regex>
@@ -9,6 +12,8 @@
 #include <algorithm>
 #include <map>
 #include <vector>
+
+
 namespace search {
 
     std::vector<std::string> search_regular(const std::string& prov_regular) {
@@ -84,7 +89,4 @@ namespace contextual_analysis {
     };
 }
 
-int main() {
-    
-    return 0;
-}
+#endif

@@ -1,10 +1,18 @@
+#ifndef CLIOUT_SEARCH_H
+#define CLIOUT_SEARCH_H
+
 #include <iostream>
 #include <string>
 #include <fstream>
 #include <filesystem>
-
 #include <windows.h>
 
+// #include "searchNameFile.h"
+
+// Предварительное объявление для предотвращения багов
+namespace searchNF {
+    void searchFileinFolders();
+}
 
 // Проверки ввода
 bool enterPathCheck(std::string& directoryPath){
@@ -35,6 +43,7 @@ namespace cliout{
     // Начало проги
     void startProgram(){
         std::cout << "vv Для начала работы в КРУТОМ СКАНЕРЕ КОДА укажите директорию проекта vv\n" << std::endl;
+        searchNF::searchFileinFolders();
     }
 
     std::string enterDirPath(){
@@ -59,11 +68,4 @@ namespace cliout{
 
 }
 
-int main(){
-    SetConsoleOutputCP(CP_UTF8);
-    SetConsoleCP(CP_UTF8);
-    setlocale(LC_ALL, "ru");
-
-    cliout::startProgram();
-    cliout::enterDirPath();
-}
+#endif
