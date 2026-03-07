@@ -61,10 +61,45 @@ namespace cliout{
             }
         }
         
-
-        // std::cout << directoryPath << std::endl;
         return directoryPath;
     }
+
+    std::string progressBarFill(int &barFilled){
+        std::string barLine = "";
+        for(double i = 0; i < static_cast<double>(barFilled) / 4; i++){
+            barLine += "|";
+        }
+        return barLine;
+    }
+    
+    // Доработать
+    void fileProgressBar(int &cF, int &aF){
+        float currentFile = static_cast<float>(cF);
+        float allFiles = static_cast<float>(aF);
+        int barFilled = static_cast<float>(currentFile / allFiles * 100);
+
+        static int lastLineCount = 0;
+        
+        for (int i = 0; i < lastLineCount; ++i) {
+            std::cout << "\033[A\033[K";
+        }
+        std::cout << "\n\nОбратотано " << cF << " из " << aF << " файлов" << std::endl;
+        std::cout << " _______________________" << std::endl;
+        std::cout << std::left << std::setw(26) << progressBarFill(barFilled) 
+        << barFilled << "%" << std::endl;
+        std::cout << " ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾" << std::endl;
+        lastLineCount = 6;
+
+        if (barFilled == 100){
+            std::cout << "\nОбработка завершена.\n" << std::endl;
+        }
+    }
+    // main
+    // int per1 = 0; int per2 = 10250;
+    // for(int i = 0; i <= per2; i++){
+    //     if(i % 100 == 0) { cliout::fileProgressBar(i, per2); }
+    // }
+    
 
 }
 
