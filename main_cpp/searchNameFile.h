@@ -4,6 +4,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <chrono>
+#include <thread>
 #include <windows.h>
 
 #include "cliout.h"
@@ -24,21 +26,32 @@ struct LineInfo {
     std::string filename;
 };
 
+// глобальные
 int globalFileId = 0;
 int globalLineId = 0;
+int globalCurrentFile = 0;
+int globalAllFiles = 0;
+
+
+void resetGlobal(){
+    globalFileId = 0;
+    globalLineId = 0;
+    globalAllFiles = 0;
+    globalCurrentFile = 0;
+}
 
 
 void ReadAndIndexFile(const std::string& filepath, const std::string& filename, int fileId) {
     std::ifstream file(filepath);
     if (!file.is_open()) {
-        std::cout << "  Хуй тебе " << filename << std::endl;
+        // std::cout << "  не открывается " << filename << std::endl;
         return;
     }
     
     std::string line;
     int lineNum = 1;
     
-    std::cout << "  Читаем файл ID " << fileId << ": " << filename << std::endl;
+    // std::cout << "  Читаем файл ID " << fileId << ": " << filename << std::endl;
     
     while (std::getline(file, line)) {
         LineInfo li;
@@ -51,19 +64,53 @@ void ReadAndIndexFile(const std::string& filepath, const std::string& filename, 
     file.close();
 }
 
-void SearchFilesInFolders(const std::string& basePath) {
+void printProgressBar(int &id, int &allFiles){
+    cliout::fileProgressBar(id, allFiles);
+}
+
+void countFilesInFolders(const std::string& basePath){
     std::string searchPath = basePath + "\\*.*";
     WIN32_FIND_DATAA fd;
     HANDLE hFind = FindFirstFileA(searchPath.c_str(), &fd);
     
     if (hFind == INVALID_HANDLE_VALUE) {
-        std::cout << "Нихуя " << basePath << std::endl;
+        // std::cout << "Ничего " << basePath << std::endl;
         return;
     }
     
-    std::cout << "\n📁 Папка: " << basePath << std::endl;
+    do {
+        std::string name = fd.cFileName;
+        if (name == "." || name == "..") continue;
+        
+        std::string fullPath = basePath + "\\" + name;
+        
+        if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+            countFilesInFolders(fullPath);
+        } else {
+            globalAllFiles++;
+        }
+    } while (FindNextFileA(hFind, &fd) != 0);
+    // std::cout << "Всего файлов: " << globalAllFiles << std::endl;
+}
+
+void SearchFilesInFolders(const std::string& basePath) {
+    if (!SetConsoleCtrlHandler(ConsoleHandler, TRUE)) {
+        std::cerr << "Не удалось установить обработчик Ctrl+C" << std::endl;
+        return;
+    }
+    std::string searchPath = basePath + "\\*.*";
+    WIN32_FIND_DATAA fd;
+    HANDLE hFind = FindFirstFileA(searchPath.c_str(), &fd);
+    
+    if (hFind == INVALID_HANDLE_VALUE) {
+        // std::cout << "Ничего " << basePath << std::endl;
+        return;
+    }
+    
+    // std::cout << "\n Папка: " << basePath << std::endl;
     
     do {
+        printProgressBar(globalCurrentFile, globalAllFiles);
         std::string name = fd.cFileName;
         if (name == "." || name == "..") continue;
         
@@ -76,10 +123,16 @@ void SearchFilesInFolders(const std::string& basePath) {
             fi.fileId = ++globalFileId;
             fi.filename = name;
             fi.fullpath = fullPath;
+            globalCurrentFile = fi.fileId;
             
-            std::cout << "\n🔍 Найден файл ID " << fi.fileId << ": " << name << std::endl;
+            // std::cout << "\n Найден файл ID " << fi.fileId << ": " << name 
+            // << std::endl;
             
             ReadAndIndexFile(fullPath, name, fi.fileId);
+            printProgressBar(fi.fileId, globalAllFiles);
+        }
+        if (cancelHandled) {
+            break;
         }
         
     } while (FindNextFileA(hFind, &fd) != 0);
@@ -87,20 +140,45 @@ void SearchFilesInFolders(const std::string& basePath) {
     FindClose(hFind);
 }
 
+void SearchFileInFolders(const std::string& searchPath){
+    int kostil = 0;
+    int kostil_2 = 1;
+    WIN32_FIND_DATAA fd;
+    HANDLE hFind = FindFirstFileA(searchPath.c_str(), &fd);
+    int fileId = ++globalFileId;
+    printProgressBar(kostil, kostil_2);
+
+    // std::cout << "\n Найден файл ID " << fileId << ": " << fd.cFileName << std::endl;
+
+    ReadAndIndexFile(searchPath, fd.cFileName, fileId);
+    printProgressBar(kostil_2, kostil_2);
+    FindClose(hFind);
+}
+
 
 void searchFilePrint(){
-    std::cout << "\n====================================\n";
-    std::cout << "=== ИТОГО: ===\n";
-    std::cout << "\n === Найдено файлов: " << globalFileId << " ===" << std::endl;
-    std::cout << "\n === Всего строк: " << globalLineId << " ===" << std::endl;
+    std::cout << "====================================\n";
+    std::cout << "\n=== Найдено файлов: " << globalFileId << " ===" << std::endl;
+    std::cout << "=== Всего строк: " << globalLineId << " ===" << std::endl;
 }
 
 namespace searchNF{
-    void searchFileinFolders()
+    void searchFileinFolders(std::string path)
     {
-        std::string path = cliout::enterDirPath();
-        SearchFilesInFolders(path);
+        countFilesInFolders(path);
+        SearchFileInFolders(path);
+        std::this_thread::sleep_for(std::chrono::milliseconds(600));
         searchFilePrint();
+        resetGlobal();
+    }
+
+    void searchDirinFolders(std::string path)
+    {
+        countFilesInFolders(path);
+        SearchFilesInFolders(path);
+        std::this_thread::sleep_for(std::chrono::milliseconds(600));
+        searchFilePrint();
+        resetGlobal();
     }
 }
 
