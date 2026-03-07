@@ -17,13 +17,6 @@ static std::atomic<bool> cancelHandled{false};
 
 static double globalProgramTimer = 0;
 
-void barPrintCancel(int delLines) {
-    std::lock_guard<std::mutex> lock(printMutex);
-    for (int i = 0; i < delLines; ++i) {
-        std::cout << "\033[A\033[K";
-    }
-    std::cout << "Операция прервана пользователем.\n" << std::endl;
-}
 
 void enterDirPrintCancel(){
     std::cout << "Операция прервана пользователем.\n" << std::endl;
@@ -88,7 +81,7 @@ std::string progressBarFill(int &barFilled){
 }
 
 void printTimer(){
-    std::cout << "\nСкан завершен за: " << globalProgramTimer << " c\n";
+    std::cout << "\nСкан завершен за: " << globalProgramTimer << " c\n\n";
 }
 
 
@@ -96,13 +89,39 @@ void printTimer(){
 
 namespace cliout{
 
+    void clearLineAndMoveUp() {
+        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+        CONSOLE_SCREEN_BUFFER_INFO csbi;
+        if (!GetConsoleScreenBufferInfo(hConsole, &csbi)) return;
+
+        // Очистить текущую строку от начала до конца
+        COORD cursorPos = csbi.dwCursorPosition;
+        DWORD written;
+        FillConsoleOutputCharacter(hConsole, ' ', csbi.dwSize.X, cursorPos, &written);
+        FillConsoleOutputAttribute(hConsole, csbi.wAttributes, csbi.dwSize.X, cursorPos, &written);
+
+        // Переместить курсор на предыдущую строку
+        if (cursorPos.Y > 0) {
+            cursorPos.Y--;
+            SetConsoleCursorPosition(hConsole, cursorPos);
+        }
+    }
+
+    void barPrintCancel(int delLines) {
+        std::lock_guard<std::mutex> lock(printMutex);
+        for (int i = 0; i < delLines; ++i) {
+            clearLineAndMoveUp();
+        }
+        std::cout << "Операция прервана пользователем.\n" << std::endl;
+    }
+
     void pythonReport(){
         std::cout << "Данные сохранены, создаю отчет...\n\n\n";
     }
 
     void delLines(int lines){
         for (int i = 0; i < lines; ++i) {
-            std::cout << "\033[A\033[K";
+            clearLineAndMoveUp();
         }
     }
     // Ввод пути
@@ -200,7 +219,7 @@ namespace cliout{
             
             
             for (int i = 0; i < lastLineCount; ++i) {
-                std::cout << "\033[A\033[K";
+                clearLineAndMoveUp();
             }
 
             std::cout << "Обратотано " << cF << " из " << aF << " файлов" << std::endl;
@@ -208,13 +227,15 @@ namespace cliout{
             std::cout << std::left << std::setw(26) << progressBarFill(barFilled) 
             << barFilled << "%" << std::endl;
             std::cout << " ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\n" << std::endl;
-            std::cout << "Нажмите Ctrl+C для прерывания операции\n" << std::endl;
+            if (barFilled == 100) { std::cout << "\n" << std::endl; } 
+            else { std::cout << "Нажмите Ctrl+C для прерывания операции\n" << std::endl; }
             lastLineCount = 7;
             
             if (barFilled == 100) {
                 for (int i = 0; i < lastLineCount-5; ++i) {
-                    std::cout << "\033[A\033[K";
+                    clearLineAndMoveUp();
                 }
+
                 std::cout << "Обработка завершена.\n" << std::endl;
             }
             
