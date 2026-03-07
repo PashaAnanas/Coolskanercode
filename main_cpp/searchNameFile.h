@@ -150,9 +150,9 @@ void SearchFileInFolders(const std::string& searchPath){
 
 
 void searchFilePrint(){
-    std::cout << "====================================\n";
-    std::cout << "\n=== Найдено файлов: " << globalFileId << " ===" << std::endl;
-    std::cout << "=== Всего строк: " << globalLineId << " ===" << std::endl;
+    std::cout << " ====================================\n";
+    std::cout << "\n === Найдено файлов: " << globalFileId << " ===" << std::endl;
+    std::cout << " === Всего строк: " << globalLineId << " ===" << std::endl;
 }
 
 namespace searchNF{
