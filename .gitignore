@@ -40,8 +40,8 @@
 # debug information files
 *.dwo
 
-.vscode/c_cpp_properties.json
-.vscode/tasks.json
+*.vscode\c_cpp_properties.json
+*.vscode/tasks.json
 
 # ignore .js
 *.json
