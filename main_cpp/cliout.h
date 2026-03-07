@@ -25,6 +25,10 @@ void barPrintCancel(int delLines) {
     std::cout << "Операция прервана пользователем.\n" << std::endl;
 }
 
+void enterDirPrintCancel(){
+    std::cout << "Операция прервана пользователем.\n" << std::endl;
+}
+
 BOOL WINAPI ConsoleHandler(DWORD dwCtrlType) {
     if (dwCtrlType == CTRL_C_EVENT) {
         cancelRequested = true;
@@ -77,57 +81,88 @@ void programTimer(std::chrono::steady_clock::time_point start, std::chrono::stea
 }
 
 
-std::string enterDirPath(){
+std::string progressBarFill(int &barFilled){
+    std::string barLine = "";
+    for(double i = 0; i < static_cast<double>(barFilled) / 4; i++){
+        barLine += "|";
+    }
+    return barLine;
+}
+
+void printTimer(){
+    std::cout << "\nСкан завершен за: " << globalProgramTimer << " c\n";
+}
+
+
+
+
+namespace cliout{
+
+    void delLines(int lines){
+        for (int i = 0; i < lines; ++i) {
+            std::cout << "\033[A\033[K";
+        }
+    }
+    // Ввод пути
+    void enterDirPath(){
+    // Сброс флагов отмены
+        cancelRequested = false;
+        cancelHandled = false;
+
         std::string directoryPath = "";
-        std::cout << "Введите путь до директории проекта или путь файла.\n"
-        << "Пример: >> S:\\Coolskanercode или S:\\Coolskanercode\\main.py\n"
-        << std::endl;
 
         while(true){
+            if (cancelRequested && !cancelHandled) {
+                enterDirPrintCancel();
+                cancelHandled = true;
+                std::cin.clear(); // чтобы работало
+                delLines(3);
+                return;
+            }
+
+            
+            std::cout << "Введите путь до директории проекта или путь файла. Ctrl+C для отмены.\n"
+            << "Пример: >> S:\\Coolskanercode или S:\\Coolskanercode\\main.py\n"
+            << std::endl;
+
             std::cout << "Введите директорию проекта или путь файла>> " << std::flush;
-            std::getline(std::cin, directoryPath);
+            if (!std::getline(std::cin, directoryPath)) {
+                std::cout << "\n" << std::endl;
+                std::cin.clear();
+                delLines(2);
+                continue;
+            }
+
             int errCheck = enterPathCheck(directoryPath);
             if (errCheck == 1){
-                // std::cout << "Успех 1\n" << std::endl;
                 std::cout << "\n\nАнализ в " << directoryPath << std::endl;
                 auto start = std::chrono::steady_clock::now();
                 searchNF::searchFileinFolders(directoryPath);
                 auto end = std::chrono::steady_clock::now();
+                // Для файла таймер не вызывается (как в оригинале)
                 break;
             } else if (errCheck == 2){
-                // std::cout << "Успех 2\n" << std::endl;
                 std::cout << "\n\nАнализ в " << directoryPath << std::endl;
                 auto start = std::chrono::steady_clock::now();
                 searchNF::searchDirinFolders(directoryPath);
                 auto end = std::chrono::steady_clock::now();
                 programTimer(start, end);
                 break;
+            } else {
+                delLines(6);
             }
-        }
-        
-        return directoryPath;
-    }
 
-namespace cliout{
+        }
+    }
 
     // Начало проги
     void startProgram(){
-        std::cout << "Для начала работы в КРУТОМ СКАНЕРЕ КОДА укажите\n"
-        << "   vv директорию проекта или путь к файлу vv\n" << std::endl;
-
         enterDirPath();
-
-        std::cout << "\nСкан завершен за: " << globalProgramTimer << " c\n";
-    }
-
-
-    std::string progressBarFill(int &barFilled){
-        std::string barLine = "";
-        for(double i = 0; i < static_cast<double>(barFilled) / 4; i++){
-            barLine += "|";
+        if (!cancelHandled) {
+            printTimer();
         }
-        return barLine;
     }
+
     
     void fileProgressBar(int &cF, int &aF){
         if (cancelHandled) return;
@@ -137,7 +172,6 @@ namespace cliout{
             cancelHandled = true;
             return;
         }
-
 
 
         auto now = std::chrono::steady_clock::now();

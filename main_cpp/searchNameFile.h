@@ -95,7 +95,6 @@ void countFilesInFolders(const std::string& basePath){
 
 void SearchFilesInFolders(const std::string& basePath) {
     if (!SetConsoleCtrlHandler(ConsoleHandler, TRUE)) {
-        std::cerr << "Не удалось установить обработчик Ctrl+C" << std::endl;
         return;
     }
     std::string searchPath = basePath + "\\*.*";
