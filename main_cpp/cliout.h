@@ -15,7 +15,7 @@ extern std::mutex printMutex;
 static std::atomic<bool> cancelRequested{false};
 static std::atomic<bool> cancelHandled{false};
 
-double globalProgramTimer = 0;
+static double globalProgramTimer = 0;
 
 void barPrintCancel(int delLines) {
     std::lock_guard<std::mutex> lock(printMutex);
@@ -160,11 +160,11 @@ namespace cliout{
     // Начало проги
     void startProgram(){
         enterDirPath();
+    if (!cancelHandled) {
         printTimer();
-        if (!cancelHandled) {
-            printTimer();
-        }
+        std::cout << "\n\n" << std::endl; 
     }
+}
 
     
     void fileProgressBar(int &cF, int &aF){
