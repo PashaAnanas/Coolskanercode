@@ -16,33 +16,50 @@
 #include <mutex>
 #include <fstream>
 
-
+// Структура для хранения информации о найденном секрете
 struct SecretInfo {
-    std::string source;
-    std::string value;
-    std::string full_line;
-    int line_number;
-    std::string filename;
-    double entropy;
+    std::string source;      // откуда обнаружено: "search", "entropy", "keywords"
+    std::string value;       // значение/описание
+    std::string full_line;   // полная строка, в которой найден секрет
+    int line_number;         // номер строки в файле
+    std::string filename;    // имя файла
+    double entropy;          // значение энтропии (для entropy)
 };
 
-// глобальный вектор для всех секретов
+// Глобальный вектор для хранения всех секретов (плоская структура)
 static std::vector<SecretInfo> all_secrets;
 static std::mutex global_mutex;
 
-// добавление секрета в общий вектор
+// Функция добавления нового секрета в общий вектор (принимает только SecretInfo)
 void addSecret(const SecretInfo& secret) {
     std::lock_guard<std::mutex> lock(global_mutex);
     all_secrets.push_back(secret);
 }
 
+// ----------------------------------------------------------------------
+// Функции для совместимости со старым кодом (могут быть удалены, 
+// но оставлены чтобы не ломать существующие вызовы)
+// ----------------------------------------------------------------------
+int addFile(const std::string& /*filename*/) {
+    return 0;   // фиктивный индекс файла
+}
 
-// поиск
+void addLine(int /*fileIndex*/, int /*lineNum*/, const std::string& /*line*/) {
+    // ничего не делаем, информация о строке хранится в SecretInfo
+}
 
+int getCurrentLineIndex(int /*fileIndex*/) {
+    return 0;   // фиктивный индекс строки
+}
+
+// ----------------------------------------------------------------------
+// Алгоритмы поиска (логика не изменена, только исправлены вызовы addSecret)
+// ----------------------------------------------------------------------
 namespace search {
 
     std::vector<std::string> search_regular(const std::string& prov_regular,
-    const std::string& filename, int lineNum) {
+                                             int /*fileIndex*/, int /*lineIndex*/,
+                                             const std::string& filename, int lineNum) {
         std::vector<std::string> result;
         std::string str{ prov_regular };
         std::regex rex{ "(\\S+)" };
@@ -76,6 +93,7 @@ namespace search {
                 si.filename = filename;
                 si.entropy = 0.0;
 
+                // ИСПРАВЛЕНО: передаём только si, без fileIndex и lineIndex
                 addSecret(si);
             }
         }
@@ -86,7 +104,8 @@ namespace search {
 namespace entropic_analysis {
 
     double entropicanalysis(const std::string& s,
-    const std::string& filename, int lineNum) {
+                            int /*fileIndex*/, int /*lineIndex*/,
+                            const std::string& filename, int lineNum) {
         if (s.empty()) return 0.0;
 
         std::unordered_map<char, int> map;
@@ -110,6 +129,7 @@ namespace entropic_analysis {
             si.filename = filename;
             si.entropy = result;
 
+            // ИСПРАВЛЕНО: передаём только si
             addSecret(si);
         }
         return result;
@@ -151,7 +171,8 @@ namespace contextual_analysis {
 
     public:
         std::map<std::string, int> analyze(const std::string& text,
-        const std::string& filename, int lineNum) {
+                                           int /*fileIndex*/, int /*lineIndex*/,
+                                           const std::string& filename, int lineNum) {
             std::map<std::string, int> result;
             std::string lowerText = toLower(text);
 
@@ -177,6 +198,7 @@ namespace contextual_analysis {
                     si.filename = filename;
                     si.entropy = 0.0;
 
+                    // ИСПРАВЛЕНО: передаём только si
                     addSecret(si);
                 }
             }
@@ -185,9 +207,9 @@ namespace contextual_analysis {
     };
 }
 
-
-// экранирование JSON
-
+// ----------------------------------------------------------------------
+// Вспомогательная функция для экранирования JSON
+// ----------------------------------------------------------------------
 std::string escapeJson(const std::string& s) {
     std::string result;
     for (char c : s) {
@@ -200,7 +222,9 @@ std::string escapeJson(const std::string& s) {
     return result;
 }
 
-// JSON для Python
+// ----------------------------------------------------------------------
+// Экспорт результатов в JSON для Python-отчёта
+// ----------------------------------------------------------------------
 void exportToPython() {
     std::map<std::string, std::map<int, std::vector<SecretInfo>>> grouped;
     {
@@ -255,17 +279,20 @@ void exportToPython() {
     file << "}\n";
     file.close();
 
+    // Вызов внешнего Python-скрипта для формирования отчёта
     system("python report.py");
 }
 
-// 3 потока проверки
+// ----------------------------------------------------------------------
+// Потоковая обёртка для параллельного запуска трёх видов анализа
+// ----------------------------------------------------------------------
 namespace searchpotoks {
 
     void search_potoks(const std::string& text, int fileIndex, int lineIndex,
-    const std::string& filename, int lineNum) {
+                       const std::string& filename, int lineNum) {
         std::thread t1([&]() {
             try {
-                search::search_regular(text, filename, lineNum);
+                search::search_regular(text, fileIndex, lineIndex, filename, lineNum);
             } catch (const std::exception& e) {
                 std::cerr << "Exception in search_regular: " << e.what() << std::endl;
             }
@@ -273,7 +300,7 @@ namespace searchpotoks {
 
         std::thread t2([&]() {
             try {
-                entropic_analysis::entropicanalysis(text, filename, lineNum);
+                entropic_analysis::entropicanalysis(text, fileIndex, lineIndex, filename, lineNum);
             } catch (const std::exception& e) {
                 std::cerr << "Exception in entropicanalysis: " << e.what() << std::endl;
             }
@@ -281,7 +308,7 @@ namespace searchpotoks {
 
         std::thread t3([&]() {
             try {
-                contextual_analysis::keywords().analyze(text, filename, lineNum);
+                contextual_analysis::keywords().analyze(text, fileIndex, lineIndex, filename, lineNum);
             } catch (const std::exception& e) {
                 std::cerr << "Exception in keywords analyze: " << e.what() << std::endl;
             }
