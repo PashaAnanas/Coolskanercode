@@ -5,9 +5,17 @@
 #include <string>
 #include <fstream>
 #include <filesystem>
+#include <chrono>
+#include <mutex>
 #include <windows.h>
 
 // #include "searchNameFile.h"
+
+// ограничение частоты вывода
+std::chrono::steady_clock::time_point lastPrintTime;
+std::mutex printMutex;
+const auto printInterval = std::chrono::milliseconds(50);
+
 
 // Предварительное объявление для предотвращения багов
 namespace searchNF {
@@ -64,6 +72,7 @@ namespace cliout{
         return directoryPath;
     }
 
+
     std::string progressBarFill(int &barFilled){
         std::string barLine = "";
         for(double i = 0; i < static_cast<double>(barFilled) / 4; i++){
@@ -72,32 +81,41 @@ namespace cliout{
         return barLine;
     }
     
-    // Доработать
     void fileProgressBar(int &cF, int &aF){
-        float currentFile = static_cast<float>(cF);
-        float allFiles = static_cast<float>(aF);
-        int barFilled = static_cast<float>(currentFile / allFiles * 100);
+        auto now = std::chrono::steady_clock::now();
+    
+        if (now - lastPrintTime >= printInterval || cF == aF) {
+            std::lock_guard<std::mutex> lock(printMutex);
+            
+            float currentFile = static_cast<float>(cF);
+            float allFiles = static_cast<float>(aF);
+            int barFilled = static_cast<float>(currentFile / allFiles * 100);
+            
+            static int lastLineCount = 0;
+            
+            for (int i = 0; i < lastLineCount; ++i) {
+                std::cout << "\033[A\033[K";
+            }
 
-        static int lastLineCount = 0;
-        
-        for (int i = 0; i < lastLineCount; ++i) {
-            std::cout << "\033[A\033[K";
-        }
-        std::cout << "\n\nОбратотано " << cF << " из " << aF << " файлов" << std::endl;
-        std::cout << " _______________________" << std::endl;
-        std::cout << std::left << std::setw(26) << progressBarFill(barFilled) 
-        << barFilled << "%" << std::endl;
-        std::cout << " ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾" << std::endl;
-        lastLineCount = 6;
-
-        if (barFilled == 100){
-            std::cout << "\nОбработка завершена.\n" << std::endl;
+            std::cout << "\n\nОбратотано " << cF << " из " << aF << " файлов" << std::endl;
+            std::cout << " _______________________" << std::endl;
+            std::cout << std::left << std::setw(26) << progressBarFill(barFilled) 
+            << barFilled << "%" << std::endl;
+            std::cout << " ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\n" << std::endl;
+            lastLineCount = 7;
+            
+            if (barFilled == 100) {
+                std::cout << "Обработка завершена.\n" << std::endl;
+            }
+            
+            lastPrintTime = now;
         }
     }
-    // main
-    // int per1 = 0; int per2 = 10250;
+    // main tests
+    // int per1 = 0; int per2 = 2000;
     // for(int i = 0; i <= per2; i++){
-    //     if(i % 100 == 0) { cliout::fileProgressBar(i, per2); }
+    //     cliout::fileProgressBar(i, per2);
+    //     std::this_thread::sleep_for(std::chrono::milliseconds(1));
     // }
     
 
