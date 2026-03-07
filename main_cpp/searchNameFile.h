@@ -177,6 +177,7 @@ namespace searchNF{
         SearchFilesInFolders(path);
         std::this_thread::sleep_for(std::chrono::milliseconds(600));
         searchFilePrint();
+        exportToPython();
         resetGlobal();
     }
 }

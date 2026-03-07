@@ -202,6 +202,72 @@ namespace contextual_analysis {
         }
     };
 }
+
+void exportToPython() {
+    std::ofstream file("scan_results.json");
+    file << "{\n";
+    file << "  \"scan_time\": \"" << __TIMESTAMP__ << "\",\n";
+    file << "  \"total_files\": " << all_results.size() << ",\n";
+    file << "  \"files\": [\n";
+    
+    for (size_t f = 0; f < all_results.size(); f++) {
+        const auto& file_result = all_results[f];
+        file << "    {\n";
+        file << "      \"filename\": \"" << file_result.filename << "\",\n";
+        file << "      \"lines\": [\n";
+        
+        for (size_t l = 0; l < file_result.lines.size(); l++) {
+            const auto& line = file_result.lines[l];
+            if (line.secrets.empty()) continue;  // пропускаем строки без секретов
+            
+            file << "        {\n";
+            file << "          \"line_number\": " << line.line_number << ",\n";
+            file << "          \"content\": \"" << escapeJson(line.full_line) << "\",\n";
+            file << "          \"secrets\": [\n";
+            
+            for (size_t s = 0; s < line.secrets.size(); s++) {
+                const auto& secret = line.secrets[s];
+                file << "            {\n";
+                file << "              \"type\": \"" << secret.source << "\",\n";
+                file << "              \"value\": \"" << escapeJson(secret.value) << "\",\n";
+                file << "              \"entropy\": " << secret.entropy << "\n";
+                file << "            }";
+                if (s < line.secrets.size() - 1) file << ",";
+                file << "\n";
+            }
+            
+            file << "          ]\n";
+            file << "        }";
+            if (l < file_result.lines.size() - 1) file << ",";
+            file << "\n";
+        }
+        
+        file << "      ]\n";
+        file << "    }";
+        if (f < all_results.size() - 1) file << ",";
+        file << "\n";
+    }
+    
+    file << "  ]\n";
+    file << "}\n";
+    file.close();
+    
+    std::cout << "\n📊 Данные сохранены, создаю отчет...\n";
+    system("python report.py");
+}
+
+std::string escapeJson(const std::string& s) {
+    std::string result;
+    for (char c : s) {
+        if (c == '"') result += "\\\"";
+        else if (c == '\\') result += "\\\\";
+        else if (c == '\n') result += "\\n";
+        else if (c == '\r') result += "\\r";
+        else result += c;
+    }
+    return result;
+}
+
 namespace searchpotoks {
     void search_potoks(const std::string& text, int fileIndex, int lineIndex, const std::string& filename, int lineNum) {
         std::vector<std::string> search_result;

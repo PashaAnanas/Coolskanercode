@@ -8,6 +8,10 @@
 #include "algorithm_search.h"
 #include "cliout.h"
 #include "searchNameFile.h"
+void Metodh()
+{
+
+}
 
 int main(){
     SetConsoleOutputCP(CP_UTF8);
