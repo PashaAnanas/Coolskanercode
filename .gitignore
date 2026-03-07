@@ -48,4 +48,4 @@
 *.json
 
 #tests
-*.main_cpp/test_alhorithms.cpp
+*.main_cpp/Tests/
