@@ -158,13 +158,11 @@ namespace cliout{
     }
 
     // Начало проги
-    int startProgram(){
+    void startProgram(){
         enterDirPath();
         if (!cancelHandled) {
             printTimer();
-            return 1;
         }
-        return 0;
     }
 
     
