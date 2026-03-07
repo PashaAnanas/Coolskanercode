@@ -12,8 +12,8 @@
 #include <algorithm>
 #include <map>
 #include <vector>
-
-
+#include <thread>
+#include <mutex>
 namespace search {
 
     std::vector<std::string> search_regular(const std::string& prov_regular) {
@@ -88,5 +88,25 @@ namespace contextual_analysis {
         }
     };
 }
+namespace searchpotoks{
+    void search_potoks(const std::string& text){
+        std::vector<std::string> search_result;
+        double entropy_result = 0.0;
+        std::map<std::string, int> keyword_result;
 
+        std::mutex cout_mutex;
+        std::mutex data_mutex;
+
+        std::thread t1([&]() {auto res = search::search_regular(text); std::lock_guard<std::mutex> lock(data_mutex); search_result = std::move(res); });\
+
+        std::thread t2([&]() {auto res = entropic_analysis::entropicanalysis(text);std::lock_guard<std::mutex> lock(data_mutex);entropy_result = std::move(res);}); 
+
+        std::thread t3([&]() {contextual_analysis::keywords analyzer; auto res = analyzer.analyze(text); std::lock_guard<std::mutex> lock(data_mutex); keyword_result = std::move(res);});
+
+        t1.join();
+        t2.join();
+        t3.join();
+        
+    }
+}
 #endif
