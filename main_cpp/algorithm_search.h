@@ -222,14 +222,14 @@ void exportToPython() {
             
             file << "        {\n";
             file << "          \"line_number\": " << line.line_number << ",\n";
-            file << "          \"content\": \"" << escapeJson(line.full_line) << "\",\n";
+            file << "          \"content\": \"" << /*escapeJson(line.full_line) <<*/ "\",\n";
             file << "          \"secrets\": [\n";
             
             for (size_t s = 0; s < line.secrets.size(); s++) {
                 const auto& secret = line.secrets[s];
                 file << "            {\n";
                 file << "              \"type\": \"" << secret.source << "\",\n";
-                file << "              \"value\": \"" << escapeJson(secret.value) << "\",\n";
+                file << "              \"value\": \"" << /*escapeJson(secret.value) <<*/ "\",\n";
                 file << "              \"entropy\": " << secret.entropy << "\n";
                 file << "            }";
                 if (s < line.secrets.size() - 1) file << ",";
@@ -252,7 +252,7 @@ void exportToPython() {
     file << "}\n";
     file.close();
     
-    std::cout << "\n📊 Данные сохранены, создаю отчет...\n";
+    // std::cout << "\n📊 Данные сохранены, создаю отчет...\n";
     system("python report.py");
 }
 

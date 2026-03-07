@@ -96,6 +96,10 @@ void printTimer(){
 
 namespace cliout{
 
+    void pythonReport(){
+        std::cout << "Данные сохранены, создаю отчет...\n\n\n";
+    }
+
     void delLines(int lines){
         for (int i = 0; i < lines; ++i) {
             std::cout << "\033[A\033[K";
@@ -162,7 +166,8 @@ namespace cliout{
         enterDirPath();
     if (!cancelHandled) {
         printTimer();
-        std::cout << "\n\n" << std::endl; 
+        std::cout << std::endl;
+        pythonReport();
     }
 }
 
