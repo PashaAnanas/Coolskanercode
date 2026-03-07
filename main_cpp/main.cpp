@@ -39,8 +39,8 @@ int main(){
         if(firstLoopFlag) { cliout::delLines(3); firstLoopFlag = false; } 
         else { cliout::delLines(5); }
         std::string s;
-        std::cout << "\n\n        Нажмите Q для выхода или ENTER для продолжения>> " << std::endl;
-        std::cout << "        >> " << std::flush;
+        std::cout << "\n\n  Нажмите Q для выхода или ENTER для продолжения>> " << std::endl;
+        std::cout << "  >> " << std::flush;
         std::getline(std::cin, s);
         if(s == ""){
         } else if(s == "Q" || s == "q"){
@@ -48,7 +48,7 @@ int main(){
             break;
         } else {
             cliout::delLines(4);
-            std::cout << "\n        Неверный ввод\n\n\n\n" << std::endl;
+            std::cout << "\n  Неверный ввод\n\n\n\n" << std::endl;
             continue;
         }
 

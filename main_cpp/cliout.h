@@ -19,7 +19,7 @@ static double globalProgramTimer = 0;
 
 
 void enterDirPrintCancel(){
-    std::cout << "        Операция прервана пользователем.\n" << std::endl;
+    std::cout << "   Операция прервана пользователем.\n" << std::endl;
 }
 
 // обработка прерываний
@@ -81,7 +81,7 @@ std::string progressBarFill(int &barFilled){
 }
 
 void printTimer(){
-    std::cout << "\n        Скан завершен за: " << globalProgramTimer << " c\n\n";
+    std::cout << "\n   Скан завершен за: " << globalProgramTimer << " c\n\n";
 }
 
 
@@ -112,11 +112,11 @@ namespace cliout{
         for (int i = 0; i < delLines; ++i) {
             clearLineAndMoveUp();
         }
-        std::cout << "        Операция прервана пользователем.\n" << std::endl;
+        std::cout << "   Операция прервана пользователем.\n" << std::endl;
     }
 
     void pythonReport(){
-        std::cout << "        Данные сохранены, создаю отчет...\n\n\n";
+        std::cout << "   Данные сохранены, создаю отчет...\n\n\n";
     }
 
     void delLines(int lines){
@@ -142,11 +142,11 @@ namespace cliout{
             }
 
             
-            std::cout << "        Введите путь до директории проекта или путь файла. Ctrl+C для отмены.\n"
-            << "        Пример: >> S:\\Coolskanercode или S:\\Coolskanercode\\main.py\n"
+            std::cout << "   Введите путь до директории проекта или путь файла. Ctrl+C для отмены.\n"
+            << "   Пример: >> S:\\Coolskanercode или S:\\Coolskanercode\\main.py\n"
             << std::endl;
 
-            std::cout << "        Введите директорию проекта или путь файла>> " << std::flush;
+            std::cout << "   Введите директорию проекта или путь файла>> " << std::flush;
             if (!std::getline(std::cin, directoryPath)) {
                 std::cout << "\n" << std::endl;
                 std::cin.clear();
@@ -156,14 +156,14 @@ namespace cliout{
 
             int errCheck = enterPathCheck(directoryPath);
             if (errCheck == 1){
-                std::cout << "\n\n        Анализ в " << directoryPath << std::endl;
+                std::cout << "\n\n   Анализ в " << directoryPath << std::endl;
                 auto start = std::chrono::steady_clock::now();
                 searchNF::searchFileinFolders(directoryPath);
                 auto end = std::chrono::steady_clock::now();
                 programTimer(start, end);
                 break;
             } else if (errCheck == 2){
-                std::cout << "\n\n        Анализ в " << directoryPath << std::endl;
+                std::cout << "\n\n   Анализ в " << directoryPath << std::endl;
                 auto start = std::chrono::steady_clock::now();
                 searchNF::searchDirinFolders(directoryPath);
                 auto end = std::chrono::steady_clock::now();
@@ -171,10 +171,10 @@ namespace cliout{
                 break;
             } else if (errCheck == -1){
                 delLines(6);
-                std::cerr << "\n        Путь не может быть пустым.\n" << std::flush;
+                std::cerr << "\n   Путь не может быть пустым.\n" << std::flush;
             } else if (errCheck == 0){
                 delLines(6);
-                std::cerr << "\n        Путь не существует.\n" << std::flush;
+                std::cerr << "\n   Путь не существует.\n" << std::flush;
             }
 
         }
@@ -222,13 +222,13 @@ namespace cliout{
                 clearLineAndMoveUp();
             }
 
-            std::cout << "        Обратотано " << cF << " из " << aF << " файлов" << std::endl;
-            std::cout << "         _______________________" << std::endl;
-            std::cout << "        " << std::left << std::setw(27) << progressBarFill(barFilled) 
+            std::cout << "   Обратотано " << cF << " из " << aF << " файлов" << std::endl;
+            std::cout << "    _______________________" << std::endl;
+            std::cout << "   " << std::left << std::setw(27) << progressBarFill(barFilled) 
             << barFilled << "%" << std::endl;
-            std::cout << "         ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\n" << std::endl;
+            std::cout << "    ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\n" << std::endl;
             if (barFilled == 100) { std::cout << "\n" << std::endl; } 
-            else { std::cout << "        Нажмите Ctrl+C для прерывания операции\n" << std::endl; }
+            else { std::cout << "   Нажмите Ctrl+C для прерывания операции\n" << std::endl; }
             lastLineCount = 7;
             
             if (barFilled == 100) {
@@ -236,7 +236,7 @@ namespace cliout{
                     clearLineAndMoveUp();
                 }
 
-                std::cout << "        Обработка завершена.\n" << std::endl;
+                std::cout << "   Обработка завершена.\n" << std::endl;
             }
             
             lastPrintTime = now;
