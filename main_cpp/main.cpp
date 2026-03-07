@@ -1,5 +1,4 @@
 #include <iostream>
-#include <iostream>
 #include <string>
 #include <fstream>
 #include <filesystem>
@@ -21,7 +20,7 @@ int main()
 
     bool firstLoopFlag = true;
     cliout::startProgram();
-    exportToPython();
+    //exportToPython();
     bool exit_bool = false;
     while(true){
         if(firstLoopFlag) { cliout::delLines(3); firstLoopFlag = false; } 
@@ -43,7 +42,7 @@ int main()
 
         if (!exit_bool) {
             cliout::startProgram();
-            exportToPython();
+            //exportToPython();
         }
     }
 }

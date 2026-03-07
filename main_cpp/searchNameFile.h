@@ -43,23 +43,17 @@ void resetGlobal(){
 
 void ReadAndIndexFile(const std::string& filepath, const std::string& filename, int fileId) {
     std::ifstream file(filepath);
-    if (!file.is_open()) {
-        // std::cout << "  не открывается " << filename << std::endl;
-        return;
-    }
-    
+    if (!file.is_open()) return;
+
     std::string line;
     int lineNum = 1;
     
-    // std::cout << "  Читаем файл ID " << fileId << ": " << filename << std::endl;
-    
     while (std::getline(file, line)) {
-        LineInfo li;
-        li.lineId = ++globalLineId;
-        li.fileId = fileId;
-        li.lineNum = lineNum++;
-        li.content = line;
-        li.filename = filename;
+        addLine(fileId, lineNum, line);
+        int lineIndex = getCurrentLineIndex(fileId);
+        searchpotoks::search_potoks(line, fileId, lineIndex, filename, lineNum);
+        
+        lineNum++;
     }
     file.close();
 }
