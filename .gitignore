@@ -47,3 +47,5 @@
 # ignore .js
 *.json
 
+#tests
+*.main_cpp/test_alhorithms.cpp
