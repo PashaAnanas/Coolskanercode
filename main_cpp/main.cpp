@@ -8,12 +8,9 @@
 #include "algorithm_search.h"
 #include "cliout.h"
 #include "searchNameFile.h"
-void Metodh()
+
+int main()
 {
-
-}
-
-int main(){
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
 
@@ -24,6 +21,7 @@ int main(){
 
     bool firstLoopFlag = true;
     cliout::startProgram();
+    exportToPython();
     bool exit_bool = false;
     while(true){
         if(firstLoopFlag) { cliout::delLines(3); firstLoopFlag = false; } 
@@ -45,6 +43,7 @@ int main(){
 
         if (!exit_bool) {
             cliout::startProgram();
+            exportToPython();
         }
     }
 }
