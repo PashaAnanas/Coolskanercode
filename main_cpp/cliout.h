@@ -137,7 +137,7 @@ namespace cliout{
                 auto start = std::chrono::steady_clock::now();
                 searchNF::searchFileinFolders(directoryPath);
                 auto end = std::chrono::steady_clock::now();
-                // Для файла таймер не вызывается (как в оригинале)
+                programTimer(start, end);
                 break;
             } else if (errCheck == 2){
                 std::cout << "\n\nАнализ в " << directoryPath << std::endl;
@@ -160,6 +160,7 @@ namespace cliout{
     // Начало проги
     void startProgram(){
         enterDirPath();
+        printTimer();
         if (!cancelHandled) {
             printTimer();
         }
