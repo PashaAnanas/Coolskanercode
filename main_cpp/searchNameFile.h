@@ -42,18 +42,20 @@ void resetGlobal(){
     globalCurrentFile = 0;
 }
 
-
 void ReadAndIndexFile(const std::string& filepath, const std::string& filename, int fileId) {
     std::ifstream file(filepath);
-    if (!file.is_open()) return;
+    if (!file.is_open()) {
+        return;
+    }
 
     std::string line;
     int lineNum = 1;
-    
+
     while (std::getline(file, line)) {
         addLine(fileId, lineNum, line);
         int lineIndex = getCurrentLineIndex(fileId);
         searchpotoks::search_potoks(line, fileId, lineIndex, filename, lineNum);
+
         globalLineId++;
         lineNum++;
     }
@@ -158,6 +160,12 @@ void searchFilePrint(){
 }
 
 namespace searchNF{
+
+    int getGlobalAllFiles(){
+        return globalAllFiles;
+    }
+
+
     void searchFileinFolders(std::string path)
     {
         countFilesInFolders(path);

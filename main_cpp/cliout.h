@@ -224,7 +224,7 @@ namespace cliout{
 
             std::cout << "   Обратотано " << cF << " из " << aF << " файлов" << std::endl;
             std::cout << "    _______________________" << std::endl;
-            std::cout << "   " << std::left << std::setw(27) << progressBarFill(barFilled) 
+            std::cout << "   " << std::left << std::setw(26) << progressBarFill(barFilled) 
             << barFilled << "%" << std::endl;
             std::cout << "    ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\n" << std::endl;
             if (barFilled == 100) { std::cout << "\n" << std::endl; } 

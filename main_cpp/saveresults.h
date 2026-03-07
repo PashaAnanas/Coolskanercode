@@ -5,74 +5,93 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <map>
 #include <iomanip>
+#include <mutex>
 #include "algorithm_search.h"
 
+
+// Вспомогательная функция для группировки секретов по файлам и строкам
+static std::map<std::string, std::map<int, std::vector<SecretInfo>>> groupSecrets() {
+    std::lock_guard<std::mutex> lock(global_mutex);
+    std::map<std::string, std::map<int, std::vector<SecretInfo>>> grouped;
+    for (const auto& sec : all_secrets) {
+        grouped[sec.filename][sec.line_number].push_back(sec);
+    }
+    return grouped;
+}
+
+// Сохранение в текстовый файл
 void saveToTxt(const std::string& filename = "scan_results.txt") {
     std::ofstream file(filename);
     if (!file.is_open()) {
         std::cerr << " Не могу создать файл " << filename << std::endl;
         return;
     }
-    
+
+    auto grouped = groupSecrets();
+
     file << "\n" << std::string(60, '=') << "\n";
     file << " РЕЗУЛЬТАТЫ ПОИСКА СЕКРЕТОВ\n";
     file << std::string(60, '=') << "\n";
-    
+
     int totalSecrets = 0;
-    int totalFiles = 0;
-    
-    for (const auto& file_result : all_results) {
-        bool fileHasSecrets = false;
-        totalFiles++;
-        
-        for (const auto& line : file_result.lines) {
-            if (!line.secrets.empty()) {
-                if (!fileHasSecrets) {
-                    file << "\n ФАЙЛ: " << file_result.filename << "\n";
-                    file << std::string(40, '-') << "\n";
-                    fileHasSecrets = true;
-                }
-                
-                file << "   Строка " << line.line_number << ": " << line.full_line << "\n";
-                
-                for (const auto& secret : line.secrets) {
-                    file << "     [" << secret.source << "] " << secret.value;
-                    if (secret.entropy > 0) {
-                        file << " (энтропия: " << std::fixed << std::setprecision(2) << secret.entropy << ")";
-                    }
-                    file << "\n";
-                    totalSecrets++;
+    int filesWithSecrets = 0;
+
+    for (const auto& fileEntry : grouped) {
+        filesWithSecrets++;
+        bool firstLineInFile = true;
+
+        for (const auto& lineEntry : fileEntry.second) {
+            if (firstLineInFile) {
+                file << "\n ФАЙЛ: " << fileEntry.first << "\n";
+                file << std::string(40, '-') << "\n";
+                firstLineInFile = false;
+            }
+
+            file << "   Строка " << lineEntry.first << ": " << lineEntry.second[0].full_line << "\n";
+
+            for (const auto& secret : lineEntry.second) {
+                file << "     [" << secret.source << "] " << secret.value;
+                if (secret.entropy > 0) {
+                    file << " (энтропия: " << std::fixed << std::setprecision(2) << secret.entropy << ")";
                 }
                 file << "\n";
+                totalSecrets++;
             }
+            file << "\n";
         }
     }
-    
+
     file << std::string(60, '=') << "\n";
-    file << " Просканировано файлов: " << totalFiles << "\n";
+    file << " Файлов с секретами: " << filesWithSecrets << "\n";
     file << " Всего найдено секретов: " << totalSecrets << "\n";
     file << std::string(60, '=') << "\n";
-    
+
     file.close();
     std::cout << " Результаты сохранены в " << filename << std::endl;
 }
 
+
+// Сохранение в HTML
 void saveToHtml(const std::string& filename = "scan_results.html") {
     std::ofstream file(filename);
     if (!file.is_open()) {
         std::cerr << " Не могу создать файл " << filename << std::endl;
         return;
     }
-    
+
+    auto grouped = groupSecrets();
+
     int totalSecrets = 0;
-    int totalFiles = all_results.size();
-    for (const auto& file_result : all_results) {
-        for (const auto& line : file_result.lines) {
-            totalSecrets += line.secrets.size();
+    int filesWithSecrets = 0;
+    for (const auto& fileEntry : grouped) {
+        filesWithSecrets++;
+        for (const auto& lineEntry : fileEntry.second) {
+            totalSecrets += lineEntry.second.size();
         }
     }
-    
+
     file << "<!DOCTYPE html>\n";
     file << "<html lang='ru'>\n";
     file << "<head>\n";
@@ -101,45 +120,37 @@ void saveToHtml(const std::string& filename = "scan_results.html") {
     file << "    <div class='container'>\n";
     file << "        <h1> РЕЗУЛЬТАТЫ ПОИСКА СЕКРЕТОВ</h1>\n";
     file << "        <div class='stats'>\n";
-    file << "            <div class='stat-item'><div class='stat-value'>" << totalFiles << "</div><div class='stat-label'> Файлов</div></div>\n";
+    file << "            <div class='stat-item'><div class='stat-value'>" << filesWithSecrets << "</div><div class='stat-label'> Файлов с секретами</div></div>\n";
     file << "            <div class='stat-item'><div class='stat-value'>" << totalSecrets << "</div><div class='stat-label'> Секретов</div></div>\n";
     file << "        </div>\n";
-    
-    for (const auto& file_result : all_results) {
-        bool fileHasSecrets = false;
-        for (const auto& line : file_result.lines) {
-            if (!line.secrets.empty()) {
-                if (!fileHasSecrets) {
-                    file << "        <div class='file'>\n";
-                    file << "            <div class='filename'> ФАЙЛ: " << file_result.filename << "</div>\n";
-                    fileHasSecrets = true;
+
+    for (const auto& fileEntry : grouped) {
+        file << "        <div class='file'>\n";
+        file << "            <div class='filename'> ФАЙЛ: " << fileEntry.first << "</div>\n";
+
+        for (const auto& lineEntry : fileEntry.second) {
+            file << "            <div class='line'>\n";
+            file << "                <span class='line-number'> Строка " << lineEntry.first << ":</span> " << lineEntry.second[0].full_line << "\n";
+
+            for (const auto& secret : lineEntry.second) {
+                std::string secretClass;
+                if (secret.source == "search") secretClass = "search";
+                else if (secret.source == "entropy") secretClass = "entropy";
+                else secretClass = "keywords";
+
+                file << "                <div class='secret " << secretClass << "'>\n";
+                file << "                     [" << secret.source << "] " << secret.value;
+                if (secret.entropy > 0) {
+                    file << " (энтропия: " << std::fixed << std::setprecision(2) << secret.entropy << ")";
                 }
-                
-                file << "            <div class='line'>\n";
-                file << "                <span class='line-number'> Строка " << line.line_number << ":</span> " << line.full_line << "\n";
-                
-                for (const auto& secret : line.secrets) {
-                    std::string secretClass;
-                    if (secret.source == "search") secretClass = "search";
-                    else if (secret.source == "entropy") secretClass = "entropy";
-                    else secretClass = "keywords";
-                    
-                    file << "                <div class='secret " << secretClass << "'>\n";
-                    file << "                     [" << secret.source << "] " << secret.value;
-                    if (secret.entropy > 0) {
-                        file << " (энтропия: " << std::fixed << std::setprecision(2) << secret.entropy << ")";
-                    }
-                    file << "\n";
-                    file << "                </div>\n";
-                }
-                file << "            </div>\n";
+                file << "\n";
+                file << "                </div>\n";
             }
+            file << "            </div>\n";
         }
-        if (fileHasSecrets) {
-            file << "        </div>\n";
-        }
+        file << "        </div>\n";
     }
-    
+
     file << "        <div class='footer'>\n";
     file << "            " << std::string(60, '=') << "\n";
     file << "            <p>Сгенерировано КРУТЫМ СКАНЕРОМ КОДА</p>\n";
@@ -147,11 +158,13 @@ void saveToHtml(const std::string& filename = "scan_results.html") {
     file << "    </div>\n";
     file << "</body>\n";
     file << "</html>\n";
-    
+
     file.close();
     std::cout << " Результаты сохранены в " << filename << std::endl;
 }
 
+
+// функция сохранения в txt
 void saveResults(const std::string& format = "txt") {
     if (format == "txt" || format == "all" || format == "both") {
         saveToTxt();
