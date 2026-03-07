@@ -160,7 +160,7 @@ void saveToHtml(const std::string& filename = "scan_results.html") {
     file << "</html>\n";
 
     file.close();
-    std::cout << " Результаты сохранены в " << filename << std::endl;
+    std::cout << " Результаты сохранены в " << filename << "\n\n" << std::endl;
 }
 
 

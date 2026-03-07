@@ -52,9 +52,8 @@ void ReadAndIndexFile(const std::string& filepath, const std::string& filename, 
     int lineNum = 1;
 
     while (std::getline(file, line)) {
-        addLine(fileId, lineNum, line);
-        int lineIndex = getCurrentLineIndex(fileId);
-        searchpotoks::search_potoks(line, fileId, lineIndex, filename, lineNum);
+        int lineIndex = lineNum;
+        // searchpotoks::search_potoks(line, fileId, lineIndex, filename, lineNum);
 
         globalLineId++;
         lineNum++;
