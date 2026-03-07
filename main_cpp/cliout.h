@@ -80,9 +80,7 @@ std::string progressBarFill(int &barFilled){
     return barLine;
 }
 
-void printTimer(){
-    std::cout << "\n   Скан завершен за: " << globalProgramTimer << " c\n\n";
-}
+
 
 
 
@@ -107,12 +105,19 @@ namespace cliout{
         }
     }
 
+    void printTimer(){
+        clearLineAndMoveUp();
+        clearLineAndMoveUp();
+        std::cout << "\n   Скан завершен за: " << globalProgramTimer << " c\n";
+    }
+
     void barPrintCancel(int delLines) {
         std::lock_guard<std::mutex> lock(printMutex);
         for (int i = 0; i < delLines; ++i) {
             clearLineAndMoveUp();
         }
-        std::cout << "   Операция прервана пользователем.\n" << std::endl;
+        clearLineAndMoveUp();
+        std::cout << "\n   Операция прервана пользователем.\n" << std::endl;
     }
 
     void pythonReport(){
@@ -224,7 +229,7 @@ namespace cliout{
 
             std::cout << "   Обратотано " << cF << " из " << aF << " файлов" << std::endl;
             std::cout << "    _______________________" << std::endl;
-            std::cout << "   " << std::left << std::setw(27) << progressBarFill(barFilled) 
+            std::cout << "   " << std::left << std::setw(26) << progressBarFill(barFilled) 
             << barFilled << "%" << std::endl;
             std::cout << "    ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\n" << std::endl;
             if (barFilled == 100) { std::cout << "\n" << std::endl; } 
