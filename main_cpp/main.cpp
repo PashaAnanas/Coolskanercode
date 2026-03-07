@@ -8,8 +8,11 @@
 #include "cliout.h"
 #include "searchNameFile.h"
 
-int main()
-{
+void method(){
+
+}
+
+int main(){
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
 
@@ -19,8 +22,11 @@ int main()
                 << "   vv директорию проекта или путь к файлу vv\n\n" << std::endl;
 
     bool firstLoopFlag = true;
+
     cliout::startProgram();
-    //exportToPython();
+    // exportToPython();
+
+
     bool exit_bool = false;
     while(true){
         if(firstLoopFlag) { cliout::delLines(3); firstLoopFlag = false; } 
@@ -30,7 +36,6 @@ int main()
         std::cout << ">> " << std::flush;
         std::getline(std::cin, s);
         if(s == ""){
-            std::cout << std::endl;
         } else if(s == "Q" || s == "q"){
             exit_bool = true;
             break;
@@ -42,7 +47,8 @@ int main()
 
         if (!exit_bool) {
             cliout::startProgram();
-            //exportToPython();
+            // exportToPython();
         }
+        
     }
 }

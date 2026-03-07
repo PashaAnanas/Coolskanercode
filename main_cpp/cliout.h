@@ -56,11 +56,9 @@ int enterPathCheck(std::string& directoryPath){
     std::filesystem::path dirPath(directoryPath);
         // Пустой
         if(directoryPath.empty()){
-            std::cerr << "Путь не может быть пустым.\n" << std::endl;
             return -1;
         } else if(!std::filesystem::exists(dirPath)){
             // Не существует
-            std::cerr << "Путь не существует.\n" << std::endl;
             return 0;
         } else if (!std::filesystem::is_directory(dirPath)) {
             // Не директория
@@ -148,19 +146,25 @@ namespace cliout{
                 auto end = std::chrono::steady_clock::now();
                 programTimer(start, end);
                 break;
-            } else {
+            } else if (errCheck == -1){
                 delLines(6);
+                std::cerr << "\nПуть не может быть пустым.\n" << std::flush;
+            } else if (errCheck == 0){
+                delLines(6);
+                std::cerr << "\nПуть не существует.\n" << std::flush;
             }
 
         }
     }
 
     // Начало проги
-    void startProgram(){
+    int startProgram(){
         enterDirPath();
         if (!cancelHandled) {
             printTimer();
+            return 1;
         }
+        return 0;
     }
 
     
