@@ -10,10 +10,13 @@
 #include <set>
 #include <sstream>
 #include <algorithm>
+#include <fstream>
 #include <map>
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <Python.h>
+
 struct SecretInfo {
     std::string source;
     std::string value;
@@ -203,6 +206,103 @@ namespace contextual_analysis {
     };
 }
 
+
+// Функция для вызова Python из C++
+void sendToPython(const std::string& text, int fileIndex, int lineIndex, 
+                  const std::string& filename, int lineNum) {
+    
+    // Инициализируем Python
+    Py_Initialize();
+    
+    // Импортируем наш модуль
+    PyObject* pName = PyUnicode_DecodeFSDefault("app");
+    PyObject* pModule = PyImport_Import(pName);
+    Py_DECREF(pName);
+    
+    if (pModule != NULL) {
+        // Получаем функцию add_data
+        PyObject* pFunc = PyObject_GetAttrString(pModule, "add_data");
+        
+        if (pFunc && PyCallable_Check(pFunc)) {
+            // Создаем кортеж с аргументами
+            PyObject* pArgs = PyTuple_New(5);
+            PyTuple_SetItem(pArgs, 0, PyUnicode_FromString(text.c_str()));
+            PyTuple_SetItem(pArgs, 1, PyLong_FromLong(fileIndex));
+            PyTuple_SetItem(pArgs, 2, PyLong_FromLong(lineIndex));
+            PyTuple_SetItem(pArgs, 3, PyUnicode_FromString(filename.c_str()));
+            PyTuple_SetItem(pArgs, 4, PyLong_FromLong(lineNum));
+            
+            // Вызываем функцию
+            PyObject* pResult = PyObject_CallObject(pFunc, pArgs);
+            
+            // Очищаем
+            Py_DECREF(pArgs);
+            Py_XDECREF(pResult);
+        }
+        
+        Py_XDECREF(pFunc);
+        Py_DECREF(pModule);
+    }
+    
+    // Завершаем Python
+    Py_Finalize();
+}
+
+// Используй эту функцию везде, где есть Array_data
+void processData() {
+    // Твои переменные
+    std::string text = "пример";
+    int fileIndex = 0;
+    int lineIndex = 0;
+    std::string filename = "file.cpp";
+    int lineNum = 10;
+    
+    // Отправляем в Python
+    sendToPython(text, fileIndex, lineIndex, filename, lineNum);
+}
+
+#include <fstream>
+#include <filesystem>
+
+void saveSimpleTextData() {
+    // Открываем файл для записи (перезаписываем)
+    std::ofstream file("scan_results_simple.txt");
+    
+    if (!file.is_open()) {
+        std::cout << "НЕ МОГУ СОЗДАТЬ ФАЙЛ!" << std::endl;
+        return;
+    }
+    
+    // Пишем количество файлов
+    file << "TOTAL_FILES: " << all_results.size() << "\n";
+    file << "====================\n";
+    
+    // Проходим по всем результатам
+    for (const auto& file_result : all_results) {
+        file << "FILE: " << file_result.filename << "\n";
+        file << "----------------\n";
+        
+        for (const auto& line : file_result.lines) {
+            if (!line.secrets.empty()) {
+                file << "LINE: " << line.line_number << "\n";
+                file << "CONTENT: " << line.full_line << "\n";
+                
+                for (const auto& secret : line.secrets) {
+                    file << "  SECRET: " << secret.source 
+                         << " | " << secret.value 
+                         << " | entropy: " << secret.entropy << "\n";
+                }
+                file << "---\n";
+            }
+        }
+        file << "====================\n";
+    }
+    
+    file.close();
+    std::cout << "ФАЙЛ СОЗДАН: scan_results_simple.txt" << std::endl;
+    std::cout << "ПУТЬ: " << std::filesystem::current_path() << std::endl;
+}
+
 namespace searchpotoks {
     void search_potoks(const std::string& text, int fileIndex, int lineIndex, const std::string& filename, int lineNum) {
         std::vector<std::string> search_result;
@@ -224,4 +324,6 @@ namespace searchpotoks {
 
     }
 }
+
+
 #endif
