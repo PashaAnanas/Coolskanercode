@@ -26,22 +26,21 @@ int main(){
 
     SetConsoleCtrlHandler(ConsoleHandler, TRUE);
 
-    std::cout << "Для начала работы в КРУТОМ СКАНЕРЕ КОДА укажите\n"
-                << "   vv директорию проекта или путь к файлу vv\n\n" << std::endl;
+    std::cout << "        Для начала работы в КРУТОМ СКАНЕРЕ КОДА укажите\n"
+                << "           vv директорию проекта или путь к файлу vv\n\n" << std::endl;
 
     bool firstLoopFlag = true;
 
     cliout::startProgram();
-    // exportToPython();
 
 
     bool exit_bool = false;
     while(true){
         if(firstLoopFlag) { cliout::delLines(3); firstLoopFlag = false; } 
-        else { cliout::delLines(6); }
+        else { cliout::delLines(5); }
         std::string s;
-        std::cout << "\n\nНажмите Q для выхода или ENTER для продолжения>> " << std::endl;
-        std::cout << ">> " << std::flush;
+        std::cout << "\n\n        Нажмите Q для выхода или ENTER для продолжения>> " << std::endl;
+        std::cout << "        >> " << std::flush;
         std::getline(std::cin, s);
         if(s == ""){
         } else if(s == "Q" || s == "q"){
@@ -49,13 +48,12 @@ int main(){
             break;
         } else {
             cliout::delLines(4);
-            std::cout << "\nНеверный ввод" << std::endl;
+            std::cout << "\n        Неверный ввод\n\n\n\n" << std::endl;
             continue;
         }
 
         if (!exit_bool) {
             cliout::startProgram();
-            // exportToPython();
         }
         
     }
