@@ -10,7 +10,7 @@
 
 #include "cliout.h"
 #include "algorithm_search.h"
-#include "saveresults.h"
+
 
 
 struct FileInfo {
@@ -171,7 +171,6 @@ namespace searchNF{
         SearchFileInFolders(path);
         std::this_thread::sleep_for(std::chrono::milliseconds(600));
         searchFilePrint();
-        saveResults("both");
         resetGlobal();
     }
 
@@ -182,7 +181,7 @@ namespace searchNF{
         std::this_thread::sleep_for(std::chrono::milliseconds(600));
         searchFilePrint();
         saveResults("both");
-        exportToPython();
+        saveSimpleTextData();
         resetGlobal();
     }
 }
